@@ -30,8 +30,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int size = 1000000;
-        int m = 1000000;
+        int size = 100000;
+        int m = 100000;
         UnionFind1 uf1 = new UnionFind1(size);
         UnionFind2 uf2 = new UnionFind2(size);
         UnionFind3 uf3 = new UnionFind3(size);
