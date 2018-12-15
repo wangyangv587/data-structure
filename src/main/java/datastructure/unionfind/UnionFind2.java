@@ -3,7 +3,7 @@ package datastructure.unionfind;
 /**
  * @author: Alex
  * @date: 2018/12/14 17:24
- * description:
+ * description: 快速查找Quick find
  */
 public class UnionFind2 implements UF {
 

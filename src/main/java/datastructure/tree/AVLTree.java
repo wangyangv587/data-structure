@@ -7,23 +7,25 @@ import java.util.*;
  * @date: 2018/12/7 11:45
  * description: 二分搜索树
  */
-public class BST<E extends Comparable<E>> {
+public class AVLTree<E extends Comparable<E>> {
 
     private class Node {
         E e;
+        int height;
         Node left, right;
 
         public Node(E e) {
             this.e = e;
             this.left = null;
             this.right = null;
+            this.height = 1;
         }
     }
 
     private Node root;
     private int size;
 
-    public BST() {
+    public AVLTree() {
         root = null;
         size = 0;
     }
@@ -34,6 +36,17 @@ public class BST<E extends Comparable<E>> {
 
     public boolean isEmpty() {
         return size == 0;
+    }
+
+    private int getHeight(Node node){
+        if(node == null)
+            return 0;
+        return node.height;
+    }
+
+    private int getBalance(){
+
+        return 0;
     }
 
     /**
@@ -56,6 +69,7 @@ public class BST<E extends Comparable<E>> {
         } else if(node.e.compareTo(e) > 0) {
             node.left = add(node.left, e);
         }
+        node.height = Math.max(getHeight(node.left),getHeight(node.right)) + 1;
         return node;//pride and prejudice
     }
 
@@ -340,7 +354,7 @@ public class BST<E extends Comparable<E>> {
     // 2   4   8 //
     ////////////////
     public static void main(String[] args) {
-        BST<Integer> bst = new BST<>();
+        AVLTree<Integer> bst = new AVLTree<>();
         for (int i = 0; i < 1000; i++)
             bst.add(new Random().nextInt(10000));
 
