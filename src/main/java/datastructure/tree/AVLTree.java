@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * @author: Alex
  * @date: 2018/12/7 11:45
- * description: 二分搜索树
+ * description: AVL
  */
 public class AVLTree<E extends Comparable<E>> {
 
@@ -44,13 +44,20 @@ public class AVLTree<E extends Comparable<E>> {
         return node.height;
     }
 
-    private int getBalance(){
-
-        return 0;
+    /**
+     * 获取节点的平衡因子
+     * @param node
+     * @return
+     */
+    private int getBalanceFactor(Node node){
+        if(node == null){
+            return 0;
+        }
+        return getHeight(node.left) - getHeight(node.right);
     }
 
     /**
-     * 向二分搜索树中添加一个元素
+     * 向AVL中添加一个元素
      *
      * @param e
      */
@@ -69,12 +76,84 @@ public class AVLTree<E extends Comparable<E>> {
         } else if(node.e.compareTo(e) > 0) {
             node.left = add(node.left, e);
         }
+        //更新height
         node.height = Math.max(getHeight(node.left),getHeight(node.right)) + 1;
+        //计算平衡因子
+        int balance = getBalanceFactor(node);
+
+        //AVL自平衡机制
+        if(balance > 1 && getBalanceFactor(node.left) >= 0){ //表示左边子树的高度比右边子树的高度大于1，开始自平衡机制-右旋转 LL
+            return rightRotate(node);
+        }
+        if(balance < -1 && getBalanceFactor(node.right) <= 0){ //表示右边子树的高度比左边子树的高度大于1，开始自平衡机制-左旋转 RR
+            return leftRotate(node);
+        }
+        if(balance > 1 && getBalanceFactor(node.left) < 0){ //表示左边子树的高度比右边子树的高度大于1，开始自平衡机制-右旋转 LR
+            node.left = leftRotate(node.left);
+            return rightRotate(node);
+        }
+        if(balance < -1 && getBalanceFactor(node.right) > 0){ //表示右边子树的高度比左边子树的高度大于1，开始自平衡机制-左旋转 RL
+            node.right = rightRotate(node.right);
+            return leftRotate(node);
+        }
+
         return node;//pride and prejudice
     }
 
     /**
-     * 非递归实现二分搜索树的前序遍历
+     * 对节点y进行右旋转操作，返回旋转后新的结果x
+     *         y                              x
+     *      /   \                          /    \
+     *     x    t4                        z      y
+     *    / \               ---->        / \    / \
+     *   z   t3                         t1 t2  t3 t4
+     *  / \
+     * t1  t2
+     * @param y
+     * @return
+     */
+    private Node rightRotate(Node y){
+        Node x = y.left;
+        Node t3 = x.right;
+
+        //向右旋转
+        x.right = y;
+        y.left = t3;
+
+        //更新height TODO
+        y.height = Math.max(getHeight(y.left),getHeight(y.right)) + 1;
+        x.height = Math.max(getHeight(x.left),getHeight(x.right)) + 1;
+        return x;
+    }
+
+    /**
+     * 对节点y进行左旋转操作，返回旋转后新的结果x
+     *         y                              x
+     *      /   \                          /    \
+     *     t1    x                        y      z
+     *          / \            ---->     / \    / \
+     *       t2   z                     t1 t2  t3 t4
+     *          /  \
+     *         t3  t4
+     * @param y
+     * @return
+     */
+    private Node leftRotate(Node y){
+        Node x = y.right;
+        Node t3 = x.left;
+
+        //向右旋转
+        x.left = y;
+        y.right = t3;
+
+        //更新height TODO
+        y.height = Math.max(getHeight(y.left),getHeight(y.right)) + 1;
+        x.height = Math.max(getHeight(x.left),getHeight(x.right)) + 1;
+        return x;
+    }
+
+    /**
+     * 非递归实现AVL的前序遍历
      */
     public void preOrderNR() {
         Stack<Node> stack = new Stack<>();
@@ -90,7 +169,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 判断二分搜索树中是否存在某个元素
+     * 判断AVL中是否存在某个元素
      *
      * @param e
      * @return
@@ -113,7 +192,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 递归实现二分搜索树的前序遍历
+     * 递归实现AVL的前序遍历
      */
     public void preOrder() {
         preOrder(root);
@@ -128,7 +207,49 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 递归实现二分搜索树的中序遍历
+     * 判断是否是一个AVL，中序遍历，是从大到小排序的
+     * @return
+     */
+    public boolean isBST(){
+        ArrayList<E> array = new ArrayList<>();
+        inOrder(root,array);
+        for(int i = 1; i < array.size(); i++){
+            if(array.get(i - 1).compareTo(array.get(i)) < 1){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 判断是否是满足平衡二叉树，即所有平衡因子是否大于1
+     */
+    public boolean isBalance(){
+        return isBalance(root);
+    }
+
+    private boolean isBalance(Node node){
+        if(node == null){
+            return true;
+        }
+        int balance = getBalanceFactor(node);
+        if(Math.abs(balance) > 1){
+            return false;
+        }
+        return isBalance(node.left) && isBalance(node.right);
+    }
+
+    private void inOrder(Node node,ArrayList<E> array){
+        if(node == null){
+            return;
+        }
+        inOrder(node.left);
+        array.add(node.e);
+        inOrder(node.right);
+    }
+
+    /**
+     * 递归实现AVL的中序遍历，输出元素按从大到小排序
      */
     public void inOrder() {
         inOrder(root);
@@ -138,12 +259,12 @@ public class AVLTree<E extends Comparable<E>> {
         if (node == null)
             return;
         inOrder(node.left);
-        System.out.println("node = " + node.e);
+        //System.out.println("node = " + node.e);
         inOrder(node.right);
     }
 
     /**
-     * 递归实现二分搜索树的后序遍历
+     * 递归实现AVL的后序遍历
      */
     public void nextOrder() {
         nextOrder(root);
@@ -158,7 +279,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 非递归实现二分搜索树的层次遍历
+     * 非递归实现AVL的层次遍历
      */
     public void levelOrder() {
         Queue<Node> queue = new LinkedList<>();
@@ -174,7 +295,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 获取二分搜索树中最小的元素
+     * 获取AVL中最小的元素
      * @return
      */
     public E mininum(){
@@ -192,7 +313,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 获取二分搜索树中最大的元素
+     * 获取AVL中最大的元素
      * @return
      */
     public E maxnum(){
@@ -210,7 +331,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 删除二分搜索树最小元素
+     * 删除AVL最小元素
      * @return
      */
     public E removeMin(){
@@ -232,7 +353,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 删除二分搜索树最小元素
+     * 删除AVL最小元素
      * @return
      */
     public E removeMax(){
@@ -254,7 +375,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 删除二分搜索树中的任意元素
+     * 删除AVL中的任意元素
      * @param e
      */
     public void remove(E e){
@@ -265,34 +386,57 @@ public class AVLTree<E extends Comparable<E>> {
         if(node == null){
             return null;
         }
+        Node retNode;
         if(e.compareTo(node.e) < 0){
             node.left = remove(node.left,e);
-            return node;
+            retNode = node;
         }else if(e.compareTo(node.e) > 0){
             node.right = remove(node.right,e);
-            return node;
+            retNode = node;
         }else{
             if(node.right == null){
                 Node leftNode = node.left;
                 node.left = null;
                 size--;
-                return leftNode;
-            }
-
-            if(node.left == null){
+                retNode = leftNode;
+            }else if(node.left == null){
                 Node rightNode = node.right;
                 node.right = null;
                 size--;
-                return rightNode;
+                retNode = rightNode;
+            }else {
+                //左右节点皆不为空，选取右子树最小节点作为这个删除节点的后继节点，也可用左子树的最大值
+                Node succ = mininum(node.right);
+                succ.right = remove(node.right, succ.e);
+                succ.left = node.left;
+                node.left = node.right = null;
+                retNode = succ;
             }
-
-            //左右节点皆不为空，选取右子树最小节点作为这个删除节点的后继节点，也可用左子树的最大值
-            Node succ = mininum(node.right);
-            succ.right = removeMin(node.right);
-            succ.left = node.left;
-            node.left = node.right = null;
-            return succ;
         }
+        if(retNode == null){
+            return null;
+        }
+        //更新height
+        retNode.height = Math.max(getHeight(retNode.left),getHeight(retNode.right)) + 1;
+        //计算平衡因子
+        int balance = getBalanceFactor(retNode);
+
+        //AVL自平衡机制
+        if(balance > 1 && getBalanceFactor(retNode.left) >= 0){ //表示左边子树的高度比右边子树的高度大于1，开始自平衡机制-右旋转 LL
+            return rightRotate(retNode);
+        }
+        if(balance < -1 && getBalanceFactor(retNode.right) <= 0){ //表示右边子树的高度比左边子树的高度大于1，开始自平衡机制-左旋转 RR
+            return leftRotate(retNode);
+        }
+        if(balance > 1 && getBalanceFactor(retNode.left) < 0){ //表示左边子树的高度比右边子树的高度大于1，开始自平衡机制-右旋转 LR
+            retNode.left = leftRotate(retNode.left);
+            return rightRotate(retNode);
+        }
+        if(balance < -1 && getBalanceFactor(retNode.right) > 0){ //表示右边子树的高度比左边子树的高度大于1，开始自平衡机制-左旋转 RL
+            retNode.right = rightRotate(retNode.right);
+            return leftRotate(retNode);
+        }
+        return retNode;
     }
 
     /**
@@ -331,7 +475,7 @@ public class AVLTree<E extends Comparable<E>> {
     }
 
     /**
-     * 获取二分搜索树的最大深度
+     * 获取AVL的最大深度
      * @return
      */
     public int depth(){
