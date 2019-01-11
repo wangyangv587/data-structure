@@ -12,23 +12,24 @@ import java.util.Random;
 public class Main {
 
     public static void main(String[] args) {
-        long start = System.nanoTime();
-        BST<Integer> bst = new BST<>();
-        ArrayList<Integer> arrayList = new ArrayList<>(100000);
+        int n = 20000000;
+        RBTree<Integer> bst = new RBTree<>();
+        ArrayList<Integer> arrayList = new ArrayList<>(n);
         Random random = new Random();
-        for(int i = 0; i < 100000; i++){
+        for(int i = 0; i < n; i++){
             arrayList.add(random.nextInt(10000));
         }
 
         //排序元素，极端情况下，BST退化成链表
         Collections.sort(arrayList);
+        long start = System.nanoTime();
         for(Integer i : arrayList){
             bst.add(i);
         }
 
-        for(Integer i : arrayList){
-            bst.contains(i);
-        }
+//        for(Integer i : arrayList){
+//            bst.contains(i);
+//        }
         long end = System.nanoTime();
         System.out.println("BST = " + (end - start) / 1000000000.0);
 
@@ -39,9 +40,9 @@ public class Main {
             avl.add(i);
         }
 
-        for(Integer i : arrayList){
-            avl.contains(i);
-        }
+//        for(Integer i : arrayList){
+//            avl.contains(i);
+//        }
         //测试删除后是否是一个avl
         /*for(Integer i : arrayList){
             avl.remove(i);
